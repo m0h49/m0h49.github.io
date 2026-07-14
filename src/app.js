@@ -131,7 +131,7 @@ const commands = {
     return `Permission denied: unable to run the command '${args[0]}' as root.`;
   },
   about() {
-    return `Привет. Я m0h49 (он же m0hmad).
+    return `Привет. Я m0h49 (он же omerpean).
 Студент Школы 21. Выживаю среди пир-ревью и сегфолтов.
 Пишу код на C, GDScript и иногда на Python.
 Моя суперсила: гуглить ошибки быстрее, чем они появляются.
