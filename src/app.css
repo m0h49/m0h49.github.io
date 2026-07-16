@@ -1,6 +1,6 @@
 @font-face {
   font-family: 'Cascadia Code';
-  src: url('/fonts/CascadiaCode.ttf');
+  src: url('fonts/CascadiaCode.ttf');
 }
 
 *,
@@ -356,11 +356,11 @@ body {
   line-height: 1.5;
 }
 
-* {
+.terminal-main {
   scrollbar-width: none;
 }
 
-*::-webkit-scrollbar {
+.terminal-main::-webkit-scrollbar {
   display: none;
 }
 

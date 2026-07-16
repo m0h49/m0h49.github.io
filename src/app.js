@@ -5,8 +5,6 @@ let historyIndex = -1;
 
 let currentHistory = [];
 let currentTheme = null;
-let historyListeners = [];
-let themeListeners = [];
 
 function loadHistory() {
   try {
@@ -19,7 +17,6 @@ function loadHistory() {
 function saveHistory(h) {
   currentHistory = h;
   try { localStorage.setItem('history', JSON.stringify(h)); } catch (_) {}
-  historyListeners.forEach(fn => fn(h));
 }
 
 function loadTheme() {
@@ -33,7 +30,6 @@ function loadTheme() {
 function saveTheme(t) {
   currentTheme = t;
   try { localStorage.setItem('colorscheme', JSON.stringify(t)); } catch (_) {}
-  themeListeners.forEach(fn => fn(t));
 }
 
 currentHistory = loadHistory();
@@ -63,7 +59,7 @@ function renderHistory(historyEl) {
           <span class="prompt-dollar">:~$</span>
         </span>
         <span class="visible-mobile">&#10093;</span>
-        <span class="command-text">${escapeHtml(entry.command === 'banner' ? '' : entry.command)}</span>
+        <span class="command-text">${escapeHtml(entry.command)}</span>
       </div>
       ${(entry.outputs || []).map(output => `<pre class="command-output">${escapeHtml(output)}</pre>`).join('')}
     </div>
@@ -89,29 +85,41 @@ function applyTheme(t) {
 function renderCommands(historyEl) {
   renderHistory(historyEl);
   setTimeout(() => {
-    const el = document.querySelector('.terminal-input');
-    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'end' });
+    const container = document.querySelector('.terminal-main');
+    if (container) container.scrollTop = container.scrollHeight;
   }, 0);
 }
 
 const commands = {
   help() {
-    const cats = {
-      System: ['help', 'clear', 'date', 'exit'],
-      m0h49: ['about', 'skills', 'projects', 'lore', 'social'],
-      Productivity: ['todo', 'weather'],
-      Math: ['calc', 'convert'],
-      Customization: ['theme', 'banner'],
-      Network: ['curl', 'hostname', 'whoami'],
-      Contact: ['email', 'repo', 'donate'],
-      Fun: ['echo', 'sudo', 'vi', 'vim', 'emacs']
-    };
-    let out = 'Available commands:\n\n';
-    for (const [cat, cmds] of Object.entries(cats)) {
-      out += cat + ':\n' + cmds.map(c => '  ' + c).join('\n') + '\n\n';
-    }
-    out += 'Type "[command] help" or "[command]" without args for more info.';
-    return out;
+    return `Available commands:
+
+about       — About me (student, School 21)
+calc        — Evaluate a mathematical expression
+clear       — Clear terminal history
+convert     — Convert between units
+curl        — Fetch and display a URL
+date        — Show current date and time
+donate      — Donation page status
+echo        — Repeat the given text
+email       — Show contact email
+exit        — Close the tab
+help        — Show this help message
+hostname    — Show current hostname
+lore        — Story behind the nickname "49"
+neofetch    — Display ASCII banner
+projects    — List of projects
+repo        — Show GitHub URL
+skills      — Show tech stack
+social      — Show social links
+sudo        — Try to run as root
+theme       — List or set color themes
+todo        — Manage todo list
+vi/vim/emacs — Editor jokes
+weather     — Fetch weather for a city
+whoami      — Show current user
+
+Type <command> --help for more info.`;
   },
   hostname() { return hostname; },
   whoami() { return 'guest'; },
@@ -131,12 +139,20 @@ const commands = {
     return `Permission denied: unable to run the command '${args[0]}' as root.`;
   },
   about() {
-    return `Привет. Я m0h49 (он же omerpean).
-Студент Школы 21. Выживаю среди пир-ревью и сегфолтов.
-Пишу код на C, GDScript и иногда на Python.
-Моя суперсила: гуглить ошибки быстрее, чем они появляются.
-Моя слабость: думать, что "работает на моей машине" — это достаточное тестирование.
-Type lore to learn why "49".`;
+    return `m0h49 (omerpean)
+──────────────────────────────
+Студент Школы 21 (Сбер).
+Разработчик на C, GDScript, Python.
+ 
+Стек: Git, Linux, Godot Engine, Vim.
+ 
+Проекты:
+  • fcsRPG / Dodge — игры на Godot
+  • C_code_autotyping — тема для Lively Wallpaper
+  • rtsp_player — эксперименты с Python
+ 
+Контакты: email, repo, social — введите команду.
+Подробнее обо мне: skills, projects, lore.`;
   },
   skills() {
     return `⚡ Languages:  C (учусь не сегфолтиться), GDScript, Python
@@ -153,7 +169,7 @@ Type lore to learn why "49".`;
    Status: Работает! (на моем компьютере, не спрашивай про другие)
 📁 C_code_autotyping — тема для Lively Wallpaper
    Status: Простая страница сайта с автокодингом.
-📁 rtsp_plyaer — эксперименты с Python
+📁 rtsp_player — эксперименты с Python
    Status: В процессе осмысления бытия и кода.
 More on GitHub → type social`;
   },
@@ -174,34 +190,26 @@ More on GitHub → type social`;
 🐙 GitHub (орг):      github.com/m0h49
 💬 Telegram:          @omerpean`;
   },
-  banner() {
+  neofetch() {
     return `
-#+================================================+
-#|                                                |
-#|  ███╗   ███╗ ██████╗ ██╗  ██╗██╗  ██╗ █████╗   |
-#|  ████╗ ████║██╔═████╗██║  ██║██║  ██║██╔══██╗  |
-#|  ██╔████╔██║██║██╔██║███████║███████║╚██████║  |
-#|  ██║╚██╔╝██║████╔╝██║██╔══██║╚════██║ ╚═══██║  |
-#|  ██║ ╚═╝ ██║╚██████╔╝██║  ██║     ██║ █████╔╝  |
-#|  ╚═╝     ╚═╝ ╚═════╝ ╚═╝  ╚═╝     ╚═╝ ╚════╝   |
-#|                                                |
-#+================================================+
++================================================+
+|                                                |
+|  ███╗   ███╗ ██████╗ ██╗  ██╗██╗  ██╗ █████╗   |
+|  ████╗ ████║██╔═████╗██║  ██║██║  ██║██╔══██╗  |
+|  ██╔████╔██║██║██╔██║███████║███████║╚██████║  |
+|  ██║╚██╔╝██║████╔╝██║██╔══██║╚════██║ ╚═══██║  |
+|  ██║ ╚═╝ ██║╚██████╔╝██║  ██║     ██║ █████╔╝  |
+|  ╚═╝     ╚═╝ ╚═════╝ ╚═╝  ╚═╝     ╚═╝ ╚════╝   |
+|                                                |
++================================================+
 
 about     — кто я такой
 skills    — мой текущий "стек"
 projects  — что я пытался создать
-lore      — почему именно 49?
+lore      — почему именно 0h49?
 social    — где меня найти
 clear     — очистить терминал
 sudo coffee — ☕
-
-Привет. Я m0h49 (он же omerpean).
-Студент Школы 21. Выживаю среди пир-ревью и сегфолтов.
-Пишу код на C, GDScript и иногда на Python.
-Моя суперсила: гуглить ошибки быстрее, чем они появляются.
-Моя слабость: думать, что "работает на моей машине" — это
-достаточное тестирование.
-Type lore to learn why "49".
 `;
   },
   theme(args) {
@@ -235,6 +243,7 @@ Type lore to learn why "49".
     if (args.length === 0) return 'curl: no URL provided';
     try {
       const res = await fetch(args[0]);
+      if (!res.ok) return 'curl: error ' + res.status + ' ' + res.statusText;
       return await res.text();
     } catch (e) {
       return 'curl: could not fetch URL ' + args[0] + '. Details: ' + e;
@@ -534,20 +543,30 @@ function handleKeyDown(e, inputEl, historyEl) {
     const args = parts.slice(1);
     const commandFn = commands[commandName];
 
-    let output;
     if (commandFn) {
-      const result = commandFn(args);
+      let result;
+      try {
+        result = commandFn(args);
+      } catch (e) {
+        saveHistory([...currentHistory, { command: fullCommand, outputs: [commandName + ': ' + e.message] }]);
+        if (historyEl) renderCommands(historyEl);
+        inputEl.value = '';
+        historyIndex = -1;
+        return;
+      }
       if (result && typeof result.then === 'function') {
         result.then(out => {
           if (commandName !== 'clear') {
             saveHistory([...currentHistory, { command: fullCommand, outputs: [out] }]);
           }
           if (historyEl) renderCommands(historyEl);
+        }).catch(e => {
+          saveHistory([...currentHistory, { command: fullCommand, outputs: [commandName + ': ' + e.message] }]);
+          if (historyEl) renderCommands(historyEl);
         });
       } else {
-        output = result;
         if (commandName !== 'clear') {
-          saveHistory([...currentHistory, { command: fullCommand, outputs: [output] }]);
+          saveHistory([...currentHistory, { command: fullCommand, outputs: [result] }]);
         }
         if (historyEl) renderCommands(historyEl);
       }
@@ -603,10 +622,10 @@ export function init(container) {
   const historyEl = container.querySelector('#history');
   const inputEl = container.querySelector('#command-input');
 
-  if (inputEl) inputEl.focus();
+  if (inputEl) inputEl.focus({ preventScroll: true });
 
   if (currentHistory.length === 0) {
-    saveHistory([{ command: 'banner', outputs: [commands.banner()] }]);
+    saveHistory([{ command: 'neofetch', outputs: [commands.neofetch()] }]);
   }
 
   if (historyEl) renderCommands(historyEl);
@@ -617,9 +636,11 @@ export function init(container) {
     });
   }
 
-  document.addEventListener('click', function() {
-    if (inputEl) inputEl.focus();
-  });
+  if (container) {
+    container.addEventListener('click', function() {
+      if (inputEl) inputEl.focus({ preventScroll: true });
+    });
+  }
 }
 
 const appContainer = document.getElementById('app');
